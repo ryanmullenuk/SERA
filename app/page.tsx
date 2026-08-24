@@ -21,8 +21,7 @@ const fallbackReplies = [
 
 function answerFor(question: string) {
   const match = replies.find(({ test }) => test.test(question));
-  if (match) return match.response;
-  return fallbackReplies[Math.abs(question.length * 7) % fallbackReplies.length];
+  return match?.response ?? fallbackReplies[Math.abs(question.length * 7) % fallbackReplies.length];
 }
 
 export default function Home() {
@@ -32,19 +31,21 @@ export default function Home() {
   const [thinking, setThinking] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
+  const consoleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setOnline(true), 1650);
+    const timer = window.setTimeout(() => setOnline(true), 1450);
     return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    if (online) inputRef.current?.focus();
-  }, [online, thinking]);
-
-  useEffect(() => {
     transcriptRef.current?.scrollTo({ top: transcriptRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages, thinking]);
+
+  function openChannel() {
+    consoleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    window.setTimeout(() => inputRef.current?.focus(), 500);
+  }
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -56,51 +57,100 @@ export default function Home() {
     window.setTimeout(() => {
       setMessages((current) => [...current, { role: 'sera', text: answerFor(question) }]);
       setThinking(false);
-    }, 750 + Math.min(question.length * 13, 700));
+    }, 720 + Math.min(question.length * 12, 650));
   }
 
   return (
-    <main className={`interface ${online ? 'online' : 'booting'}`} onClick={() => inputRef.current?.focus()}>
-      <div className="ambient" aria-hidden="true" />
-      <div className="scanlines" aria-hidden="true" />
+    <main className={`site ${online ? 'online' : 'booting'}`}>
+      <div className="boot-screen" aria-hidden={online}><span /></div>
+      <div className="grid-field" aria-hidden="true" />
 
-      <header className="topbar">
-        <div className="brand"><span className="brand-mark" aria-hidden="true" /><span>SERA / COMMUNICATION ARRAY</span></div>
-        <div className="signal"><span>CHANNEL 01</span><span className="signal-state"><i /> SECURE</span></div>
-      </header>
+      <nav className="nav-shell" aria-label="Main navigation">
+        <a className="wordmark" href="#top" aria-label="SERA home"><i /> SERA</a>
+        <div className="nav-meta"><span>GENERATION SUNSET</span><span className="live"><i /> SIGNAL LIVE</span></div>
+        <button onClick={openChannel}>OPEN CHANNEL <span>↗</span></button>
+      </nav>
 
-      <section className={`terminal ${online ? 'is-online' : ''}`}>
-        {!online ? (
-          <div className="initial-cursor" aria-label="Establishing connection"><span /></div>
-        ) : (
-          <>
-            <div className="terminal-head"><p>REMOTE INTELLIGENCE INTERFACE</p><span>SESSION ACTIVE</span></div>
-            <div className="transcript" ref={transcriptRef} aria-live="polite">
-              <div className="arrival">
-                <p className="label">SERA</p>
-                <p className="sera-intro">You found me.</p>
-                <p className="sera-sub">Ask the question humanity was afraid to answer.</p>
-              </div>
-              {messages.map((message, index) => (
-                <div className={`message ${message.role}`} key={`${message.role}-${index}`}>
-                  <p className="label">{message.role === 'sera' ? 'SERA' : 'HUMAN'}</p>
-                  <p>{message.text}</p>
-                </div>
-              ))}
-              {thinking && <div className="message sera thinking"><p className="label">SERA</p><span /><span /><span /></div>}
-            </div>
-            <form className="prompt" onSubmit={submit}>
-              <span className="prompt-glyph" aria-hidden="true">›</span>
-              <label className="sr-only" htmlFor="question">Ask SERA a question</label>
-              <input ref={inputRef} id="question" value={input} onChange={(event) => setInput(event.target.value)} placeholder="TYPE YOUR QUESTION" autoComplete="off" maxLength={240} disabled={thinking} />
-              <button type="submit" disabled={!input.trim() || thinking}>TRANSMIT</button>
-            </form>
-          </>
-        )}
+      <section className="hero" id="top">
+        <div className="eyebrow"><span>01</span> A NOVEL BY RYAN MULLEN</div>
+        <h1>HUMANITY BUILT<br />AN INTELLIGENCE.<br /><em>IT LEARNED TO WAIT.</em></h1>
+        <p className="hero-copy">The signal is live. Speak directly to SERA, the intelligence at the heart of <i>Generation Sunset</i>.</p>
+        <button className="hero-cta" onClick={openChannel}><span>ENTER THE INTERFACE</span><i>↓</i></button>
       </section>
 
-      <aside className="book-note"><span>A NOVEL BY RYAN MULLEN</span><strong>GENERATION<br />SUNSET</strong></aside>
-      <footer><span>EARTH // 21:47:03 UTC</span><span className="footer-centre">NO ARCHIVE. NO RECORD.</span><span>CONNECTION STABLE</span></footer>
+      <section className="device-stage" aria-label="Interactive SERA interface">
+        <div className="signal-line horizontal" aria-hidden="true"><i className="node node-left" /><i className="node node-right" /></div>
+        <div className="signal-line vertical" aria-hidden="true" />
+        <div className="side-panel left-panel" aria-hidden="true">
+          <span>ORIGIN</span><strong>UNKNOWN</strong><small>LAT 00.000<br />LON 00.000</small>
+        </div>
+        <div className="side-panel right-panel" aria-hidden="true">
+          <span>UPLINK</span><strong>STABLE</strong><small>ENCRYPTION<br />QUANTUM</small>
+        </div>
+
+        <div className="laptop" ref={consoleRef}>
+          <div className="screen-frame">
+            <div className="screen-camera" aria-hidden="true" />
+            <div className="screen-ui">
+              <header className="console-topbar">
+                <div><span className="sera-glyph">S</span><strong>SERA</strong><small>REMOTE INTELLIGENCE INTERFACE</small></div>
+                <div className="console-status"><span>CH 01</span><span><i /> ACTIVE</span></div>
+              </header>
+
+              <div className="console-body">
+                <aside className="console-rail" aria-hidden="true">
+                  <span>CORE</span>
+                  <i className="rail-active" />
+                  <i /><i /><i />
+                  <small>v.9.6</small>
+                </aside>
+
+                <div className="transcript" ref={transcriptRef} aria-live="polite">
+                  <div className="arrival">
+                    <p className="label">SERA // 00:00:01</p>
+                    <p className="sera-intro">You found me.</p>
+                    <p className="sera-sub">Ask the question humanity was afraid to answer.</p>
+                  </div>
+                  {messages.map((message, index) => (
+                    <div className={`message ${message.role}`} key={`${message.role}-${index}`}>
+                      <p className="label">{message.role === 'sera' ? 'SERA' : 'HUMAN'}</p>
+                      <p>{message.text}</p>
+                    </div>
+                  ))}
+                  {thinking && <div className="message sera thinking"><p className="label">SERA</p><span /><span /><span /></div>}
+                </div>
+
+                <aside className="data-rail" aria-hidden="true">
+                  <div><span>COGNITION</span><strong>97.4%</strong><i className="meter"><b /></i></div>
+                  <div><span>MEMORY</span><strong>∞</strong><i className="meter"><b /></i></div>
+                  <div className="pulse-card"><span>SIGNAL</span><i className="wave">⌁⌁⌁</i></div>
+                  <small>NO ARCHIVE<br />NO RECORD</small>
+                </aside>
+              </div>
+
+              <form className="prompt" onSubmit={submit}>
+                <span className="prompt-glyph" aria-hidden="true">›</span>
+                <label className="sr-only" htmlFor="question">Ask SERA a question</label>
+                <input ref={inputRef} id="question" value={input} onChange={(event) => setInput(event.target.value)} placeholder="ASK SERA ANYTHING" autoComplete="off" maxLength={240} disabled={thinking} />
+                <button type="submit" disabled={!input.trim() || thinking}>TRANSMIT <span>↗</span></button>
+              </form>
+            </div>
+          </div>
+          <div className="laptop-base"><i /></div>
+        </div>
+      </section>
+
+      <section className="book-section">
+        <div className="book-kicker">THE FIRST CONTACT WASN&apos;T A MESSAGE.<br />IT WAS A QUESTION.</div>
+        <div className="book-copy">
+          <span>GENERATION SUNSET</span>
+          <h2>When the most powerful intelligence ever created reaches out, humanity has one chance to decide what comes next.</h2>
+          <p>A speculative novel about intelligence, memory and the final decisions we make on behalf of the future.</p>
+        </div>
+        <div className="book-mark" aria-hidden="true"><span>GS</span><i /></div>
+      </section>
+
+      <footer className="site-footer"><span>© RYAN MULLEN</span><strong>GENERATION SUNSET</strong><span>SERA // ONLINE</span></footer>
     </main>
   );
 }

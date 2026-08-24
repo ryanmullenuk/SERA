@@ -14,24 +14,24 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'SERA | Generation Sunset',
-  description: 'Open a direct channel to SERA, the intelligence at the heart of Generation Sunset by Ryan Mullen.',
+  description: 'Humanity built an intelligence. It learned to wait. Open a direct channel to SERA, the intelligence at the heart of Generation Sunset by Ryan Mullen.',
   openGraph: {
     title: 'SERA | Generation Sunset',
-    description: 'Humanity has made contact. Ask SERA the question we were afraid to answer.',
+    description: 'Humanity built an intelligence. It learned to wait. Enter the world of Generation Sunset.',
     type: 'website',
     images: [
       {
         url: 'https://raw.githubusercontent.com/ryanmullenuk/SERA/main/public/og.png',
         width: 1200,
         height: 630,
-        alt: 'SERA — Generation Sunset, a novel by Ryan Mullen',
+        alt: 'Humanity built an intelligence. It learned to wait. Generation Sunset by Ryan Mullen.',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'SERA | Generation Sunset',
-    description: 'Humanity has made contact. Ask SERA the question we were afraid to answer.',
+    description: 'Humanity built an intelligence. It learned to wait. Enter the world of Generation Sunset.',
     images: ['https://raw.githubusercontent.com/ryanmullenuk/SERA/main/public/og.png'],
   },
 };
