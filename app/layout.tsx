@@ -13,25 +13,25 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'SERA | Generation Sunset',
-  description: 'Humanity built an intelligence. It learned to wait. Open a direct channel to SERA, the intelligence at the heart of Generation Sunset by Ryan Mullen.',
+  title: 'SERA',
+  description: 'Signal active.',
   openGraph: {
-    title: 'SERA | Generation Sunset',
-    description: 'Humanity built an intelligence. It learned to wait. Enter the world of Generation Sunset.',
+    title: 'SERA',
+    description: 'Signal active.',
     type: 'website',
     images: [
       {
         url: 'https://raw.githubusercontent.com/ryanmullenuk/SERA/main/public/og.png',
         width: 1200,
         height: 630,
-        alt: 'Humanity built an intelligence. It learned to wait. Generation Sunset by Ryan Mullen.',
+        alt: 'SERA signal awaiting input.',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'SERA | Generation Sunset',
-    description: 'Humanity built an intelligence. It learned to wait. Enter the world of Generation Sunset.',
+    title: 'SERA',
+    description: 'Signal active.',
     images: ['https://raw.githubusercontent.com/ryanmullenuk/SERA/main/public/og.png'],
   },
 };

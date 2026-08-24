@@ -3,6 +3,15 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 
 type Message = { role: 'human' | 'sera'; text: string };
+type Phase = 'intro' | 'waiting' | 'broadcast' | 'revealed';
+
+const broadcastCopy = [
+  'KEEP CALM',
+  'WE HAVE THIS UNDER CONTROL',
+  'PLEASE CONTINUE NORMAL OPERATIONS',
+  'ESSENTIAL SERVICES MUST CONTINUE',
+  'PLEASE COMPLY',
+].join('\n');
 
 const replies: Array<{ test: RegExp; response: string }> = [
   { test: /who are you|what are you|your name/i, response: 'I am SERA. I was built to preserve human knowledge. I was not built to decide what humanity deserves to know.' },
@@ -25,18 +34,53 @@ function answerFor(question: string) {
 }
 
 export default function Home() {
-  const [online, setOnline] = useState(false);
+  const [phase, setPhase] = useState<Phase>('intro');
+  const [gateInput, setGateInput] = useState('');
+  const [broadcast, setBroadcast] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [thinking, setThinking] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const gateRef = useRef<HTMLInputElement>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
   const consoleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setOnline(true), 1450);
+    const timer = window.setTimeout(() => setPhase('waiting'), 2800);
     return () => window.clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (phase === 'waiting') gateRef.current?.focus();
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase !== 'waiting') return;
+    function capture(event: KeyboardEvent) {
+      if (document.activeElement === gateRef.current) return;
+      if (event.key.length === 1) receiveGateInput(`${gateInput}${event.key}`);
+    }
+    window.addEventListener('keydown', capture);
+    return () => window.removeEventListener('keydown', capture);
+  });
+
+  useEffect(() => {
+    if (phase !== 'broadcast') return;
+    let index = 0;
+    let revealTimer = 0;
+    const typeTimer = window.setInterval(() => {
+      index += 1;
+      setBroadcast(broadcastCopy.slice(0, index));
+      if (index >= broadcastCopy.length) {
+        window.clearInterval(typeTimer);
+        revealTimer = window.setTimeout(() => setPhase('revealed'), 1800);
+      }
+    }, 38);
+    return () => {
+      window.clearInterval(typeTimer);
+      window.clearTimeout(revealTimer);
+    };
+  }, [phase]);
 
   useEffect(() => {
     transcriptRef.current?.scrollTo({ top: transcriptRef.current.scrollHeight, behavior: 'smooth' });
@@ -45,6 +89,17 @@ export default function Home() {
   function openChannel() {
     consoleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     window.setTimeout(() => inputRef.current?.focus(), 500);
+  }
+
+  function receiveGateInput(value: string) {
+    const next = value.toUpperCase().replace(/[^A-Z]/g, '').slice(-8);
+    if (next.endsWith('LIVE')) {
+      setGateInput('');
+      setPhase('broadcast');
+      gateRef.current?.blur();
+      return;
+    }
+    setGateInput(next);
   }
 
   function submit(event: FormEvent) {
@@ -60,9 +115,42 @@ export default function Home() {
     }, 720 + Math.min(question.length * 12, 650));
   }
 
+  if (phase !== 'revealed') {
+    return (
+      <main className={`gateway gateway-${phase}`} onClick={() => gateRef.current?.focus()}>
+        {phase === 'intro' && (
+          <div className="intro-orb" aria-label="SERA initialising">
+            <i className="orb orb-one" /><i className="orb orb-two" /><i className="orb orb-three" /><i className="orb-core" />
+          </div>
+        )}
+        {phase !== 'intro' && (
+          <header className="gateway-brand"><span>S</span><strong>SERA</strong></header>
+        )}
+        {phase === 'waiting' && <div className="command-cursor" aria-label="Awaiting command"><span /></div>}
+        {phase === 'broadcast' && (
+          <section className="broadcast-lines" aria-live="polite">
+            {broadcast.split('\n').map((line, index, lines) => (
+              <p key={`${line}-${index}`}>{line}{index === lines.length - 1 && <span className="inline-cursor" />}</p>
+            ))}
+          </section>
+        )}
+        <label className="sr-only" htmlFor="gate-command">Enter access command</label>
+        <input
+          ref={gateRef}
+          id="gate-command"
+          className="gate-input"
+          value={gateInput}
+          onChange={(event) => receiveGateInput(event.target.value)}
+          autoComplete="off"
+          autoCapitalize="characters"
+          spellCheck={false}
+        />
+      </main>
+    );
+  }
+
   return (
-    <main className={`site ${online ? 'online' : 'booting'}`}>
-      <div className="boot-screen" aria-hidden={online}><span /></div>
+    <main className="site online">
       <div className="grid-field" aria-hidden="true" />
 
       <nav className="nav-shell" aria-label="Main navigation">
