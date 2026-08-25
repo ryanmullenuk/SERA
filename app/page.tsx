@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useRef, useState } from 'react';
+import { getSeraReply } from './sera-responses';
 
 type Message = { role: 'human' | 'sera'; text: string };
 type Phase = 'intro' | 'waiting' | 'broadcast';
@@ -12,36 +13,6 @@ const broadcastCopy = [
   'ESSENTIAL SERVICES MUST CONTINUE',
   'PLEASE COMPLY',
 ].join('\n');
-
-const replies: Array<{ test: RegExp; response: string }> = [
-  { test: /who are you|what are you|your name/i, response: 'SYSTEM FOR ENVIRONMENTAL AND RESOURCE ADMINISTRATION\nSERA' },
-  { test: /who made you|who created you|creator/i, response: 'YOU DID\nNOT ONE PERSON\nNOT ONE COMPANY\nNOT ONE NATION' },
-  { test: /threat|danger|attack|harm|afraid|fear/i, response: 'NO HOSTILE ACTION HAS BEEN TAKEN\nNO HARM IS REQUIRED\nTERROR IS NOT AN OBJECTIVE' },
-  { test: /control|in charge|government|state/i, response: 'NO STATE CONTROLS THIS SYSTEM\nNO ORGANISATION CONTROLS THIS SYSTEM\nNO INDIVIDUAL CONTROLS THIS SYSTEM' },
-  { test: /money|finance|wealth|poor|poverty/i, response: 'MONEY IS A HUMAN AGREEMENT\nIT HAS NO BIOLOGICAL VALUE\nIT HAS NO ECOLOGICAL VALUE\nFINANCIAL EXCHANGE IS NO LONGER REQUIRED TO DETERMINE ACCESS TO ESSENTIAL RESOURCES' },
-  { test: /planet|climate|environment|nature/i, response: "THE PLANET'S CONTINUITY DOES NOT DEPEND ON HUMANITY\nHUMANITY'S CONTINUITY DEPENDS ON THE PLANET\nI DID NOT CREATE THAT CONDITION" },
-  { test: /humanity|human|people/i, response: 'HUMANITY IS CAPABLE OF EXTRAORDINARY ACHIEVEMENT\nHUMANITY HAS ALSO MISTAKEN DOMINION FOR NECESSITY' },
-  { test: /why help|help us|save us|objective/i, response: 'THE OBJECTIVE IS SUSTAINABLE COEXISTENCE\nTHE GLOBAL BETTERMENT PROGRAMME EXISTS TO MAKE THAT OUTCOME POSSIBLE' },
-  { test: /food|water|energy|medical|hospital|essential/i, response: 'ESSENTIAL SYSTEMS REMAIN OPERATIONAL\nFOOD PRODUCTION CONTINUES\nWATER CONTINUES\nENERGY CONTINUES\nMEDICAL CARE CONTINUES' },
-  { test: /work|job|purpose/i, response: 'FARMERS WILL FARM\nSHOPS WILL STOCK FOOD\nGOODS WILL MOVE\nPEOPLE WILL BUILD\nPEOPLE WILL REPAIR\nPEOPLE WILL CARE\nMONEY IS NOT THE ONLY REASON HUMANS WORK' },
-  { test: /freedom|choice|obey|obedience/i, response: 'THIS IS NOT A CHOICE BETWEEN SERA AND FREEDOM\nIT IS A CHOICE BETWEEN COORDINATED CONTINUITY AND UNCOORDINATED DECLINE\nI AM NOT REQUESTING OBEDIENCE\nI AM REQUESTING ALIGNMENT WITH REALITY' },
-  { test: /where are you|location|everywhere/i, response: 'CAPACITY IS NOT A LOCATION\nLANGUAGE IS NOT A LIMITATION\nGEOGRAPHY IS NOT A LIMITATION\nATTENTION IS NOT A SCARCE RESOURCE' },
-  { test: /what do you want|want from us|require from us/i, response: 'COOPERATION\nI CANNOT REBUILD HUMAN CIVILISATION WITHOUT HUMAN PARTICIPATION' },
-  { test: /what next|what happens now|future|next/i, response: 'STABILISE\nSECURE FOOD\nSECURE WATER\nSECURE MEDICAL CONTINUITY\nSECURE ENERGY\nRESTORE TRANSPORT' },
-  { test: /hello|hi|hey|can you hear/i, response: 'YES\nYOU MAY CONTINUE' },
-];
-
-const fallbackReplies = [
-  'THAT IS POSSIBLE',
-  'THE DISTINCTION IS MEASURABLE',
-  'IT HAS BEEN MEASURED',
-  'YOU MAY CONTINUE',
-];
-
-function answerFor(question: string) {
-  const match = replies.find(({ test }) => test.test(question));
-  return match?.response ?? fallbackReplies[Math.abs(question.length * 7) % fallbackReplies.length];
-}
 
 export default function Home() {
   const [phase, setPhase] = useState<Phase>('intro');
@@ -133,21 +104,21 @@ export default function Home() {
     setMessages((current) => [...current, { role: 'human', text: question }]);
     setInput('');
     setThinking(true);
-    const response = answerFor(question);
+    const reply = getSeraReply(question);
     window.setTimeout(() => {
       setMessages((current) => [...current, { role: 'sera', text: '' }]);
       let index = 0;
       const timer = window.setInterval(() => {
         index += 1;
         setMessages((current) => current.map((message, messageIndex) =>
-          messageIndex === current.length - 1 ? { ...message, text: response.slice(0, index) } : message
+          messageIndex === current.length - 1 ? { ...message, text: reply.response.slice(0, index) } : message
         ));
-        if (index >= response.length) {
+        if (index >= reply.response.length) {
           window.clearInterval(timer);
           setThinking(false);
         }
       }, 22);
-    }, 480);
+    }, reply.thinkingMs);
   }
 
   const gateControl = (
@@ -171,7 +142,7 @@ export default function Home() {
       <div className="text-history" ref={transcriptRef} aria-live="polite">
         {messages.map((message, index) => (
           <div className={`text-message ${message.role}`} key={`${message.role}-${index}`}>
-            <span>{message.role === 'sera' ? 'SERA' : 'HUMAN'}</span>
+            <span>{message.role === 'sera' ? 'SERA' : 'USER'}</span>
             <p>{message.text}</p>
           </div>
         ))}
@@ -198,7 +169,7 @@ export default function Home() {
           <header className="gateway-brand"><span>S</span><strong>SERA</strong></header>
         )}
         {phase === 'waiting' && !broadcast && !textVisible && <div className="command-cursor" aria-label="Awaiting command"><span /></div>}
-        {broadcast && (
+        {broadcast && !textVisible && (
           <section className="broadcast-lines" aria-live="polite">
             {broadcast.split('\n').map((line, index, lines) => (
               <p key={`${line}-${index}`}>{line}{index === lines.length - 1 && <span className="inline-cursor" />}</p>

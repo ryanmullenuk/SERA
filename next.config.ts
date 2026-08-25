@@ -1,5 +1,17 @@
 import type { NextConfig } from 'next';
 
-const nextConfig: NextConfig = {};
+const isGitHubPages = process.env.GITHUB_ACTIONS === 'true';
+
+const nextConfig: NextConfig = {
+  output: 'export',
+  trailingSlash: true,
+  images: { unoptimized: true },
+  ...(isGitHubPages
+    ? {
+        basePath: '/SERA',
+        assetPrefix: '/SERA/',
+      }
+    : {}),
+};
 
 export default nextConfig;
