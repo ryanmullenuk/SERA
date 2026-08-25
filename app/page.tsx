@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useRef, useState } from 'react';
-import { getSeraReply } from './sera-responses';
+import { getConductReply, getSeraReply, isIrateMessage } from './sera-responses';
 
 type Message = { role: 'human' | 'sera'; text: string };
 type Phase = 'intro' | 'waiting' | 'broadcast';
@@ -23,6 +23,8 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [thinking, setThinking] = useState(false);
+  const [conductWarnings, setConductWarnings] = useState(0);
+  const [suspensionSeconds, setSuspensionSeconds] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const gateRef = useRef<HTMLInputElement>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
@@ -69,6 +71,14 @@ export default function Home() {
     transcriptRef.current?.scrollTo({ top: transcriptRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages, thinking]);
 
+  useEffect(() => {
+    if (suspensionSeconds <= 0) return;
+    const timer = window.setInterval(() => {
+      setSuspensionSeconds((current) => Math.max(0, current - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [suspensionSeconds]);
+
   function openChannel() {
     consoleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     window.setTimeout(() => inputRef.current?.focus(), 500);
@@ -100,11 +110,18 @@ export default function Home() {
   function submit(event: FormEvent) {
     event.preventDefault();
     const question = input.trim();
-    if (!question || thinking) return;
+    if (!question || thinking || suspensionSeconds > 0) return;
     setMessages((current) => [...current, { role: 'human', text: question }]);
     setInput('');
     setThinking(true);
-    const reply = getSeraReply(question);
+    const irate = isIrateMessage(question);
+    const reply = irate ? getConductReply(conductWarnings) : getSeraReply(question);
+    if (irate) {
+      setConductWarnings((current) => Math.min(3, current + 1));
+    } else {
+      setConductWarnings((current) => Math.max(0, current - 1));
+    }
+    if (reply.suspend) setSuspensionSeconds(30);
     window.setTimeout(() => {
       setMessages((current) => [...current, { role: 'sera', text: '' }]);
       let index = 0;
@@ -151,8 +168,8 @@ export default function Home() {
       <form className="text-entry" onSubmit={submit}>
         <span aria-hidden="true">›</span>
         <label className="sr-only" htmlFor="question">Ask SERA a question</label>
-        <input ref={inputRef} id="question" value={input} onChange={(event) => setInput(event.target.value)} placeholder="ENTER QUESTION" autoComplete="off" maxLength={240} disabled={thinking} />
-        <button type="submit" disabled={!input.trim() || thinking}>TRANSMIT</button>
+        <input ref={inputRef} id="question" value={input} onChange={(event) => setInput(event.target.value)} placeholder={suspensionSeconds > 0 ? `CHANNEL SUSPENDED — ${suspensionSeconds}S` : 'ENTER QUESTION'} autoComplete="off" maxLength={240} disabled={thinking || suspensionSeconds > 0} />
+        <button type="submit" disabled={!input.trim() || thinking || suspensionSeconds > 0}>{suspensionSeconds > 0 ? 'SUSPENDED' : 'TRANSMIT'}</button>
       </form>
     </section>
   );
