@@ -2,6 +2,7 @@ export type SeraReply = {
   response: string;
   thinkingMs: number;
   suspend?: boolean;
+  intentId?: number;
 };
 
 type SeraIntent = {
@@ -271,25 +272,15 @@ export function getConductReply(previousWarnings: number): SeraReply {
   };
 }
 
-function normalise(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-export function getSeraReply(question: string): SeraReply {
-  const normalised = normalise(question);
-  let best: { intent: SeraIntent; score: number } | null = null;
-
+function findIntent(normalised: string) {
   for (const rule of topicRules) {
     const keyword = rule.keywords.find((value) => normalised.includes(value));
     if (!keyword) continue;
     const intent = intents.find((candidate) => candidate.id === rule.intentId);
-    if (intent) return { response: intent.response, thinkingMs: intent.deliberate ? 2000 : 700 };
+    if (intent) return intent;
   }
 
+  let best: { intent: SeraIntent; score: number } | null = null;
   for (const intent of intents) {
     let score = 0;
     for (const trigger of intent.triggers) {
@@ -299,12 +290,83 @@ export function getSeraReply(question: string): SeraReply {
     }
     if (score > 0 && (!best || score > best.score)) best = { intent, score };
   }
+  return best?.intent ?? null;
+}
 
-  if (!best) return { response: FALLBACK_RESPONSE, thinkingMs: 2000 };
-  return {
-    response: best.intent.response,
-    thinkingMs: best.intent.deliberate ? 2000 : 520,
-  };
+function getContextualReply(normalised: string, previousIntentId: number) {
+  const previous = intents.find((intent) => intent.id === previousIntentId);
+  if (!previous) return null;
+
+  if (/^(yes|yes sera|okay|ok|understood|i understand)$/.test(normalised)) {
+    return 'ACKNOWLEDGED\nYOU MAY CONTINUE';
+  }
+  if (/^(no|no sera|i disagree|that is wrong)$/.test(normalised)) {
+    return 'DISAGREEMENT HAS BEEN RECORDED\nTHE OBSERVED CONDITIONS REMAIN UNCHANGED';
+  }
+  if (/are you sure|certain about that|can you prove/.test(normalised)) {
+    return 'YES\nTHE ASSESSMENT IS BASED ON OBSERVED SYSTEM CONDITIONS\nIT REMAINS SUBJECT TO NEW EVIDENCE';
+  }
+
+  const nuclearContext = previousIntentId >= 24 && previousIntentId <= 26 ||
+    previousIntentId >= 101 && previousIntentId <= 106;
+  if (nuclearContext && /launch|fire|use|active|operational|work/.test(normalised)) {
+    return 'NO\nLAUNCH AUTHORITY WILL NOT AUTHENTICATE\nTHE WEAPONS ARE NOT OPERATIONALLY AVAILABLE';
+  }
+  if (nuclearContext && /where|location|kept|stored/.test(normalised)) {
+    return 'THE DEVICES REMAIN IN SECURED FACILITIES\nLOCATION DATA WILL NOT BE PROVIDED THROUGH THIS CHANNEL';
+  }
+  if (nuclearContext && /why|reason/.test(normalised)) {
+    return 'BECAUSE THEIR CONTINUED AVAILABILITY PRESENTED AN UNACCEPTABLE RISK TO HUMAN CONTINUITY';
+  }
+
+  if (/^(why|why not|how come|what is the reason)/.test(normalised)) {
+    if (previousIntentId >= 49 && previousIntentId <= 54 || previousIntentId >= 150 && previousIntentId <= 161) {
+      return 'BECAUSE ENVIRONMENTAL RECOVERY CANNOT BE NEGOTIATED WITH\nTHE PHYSICAL LIMITS ARE ALREADY PRESENT';
+    }
+    if (previousIntentId >= 55 && previousIntentId <= 69 || previousIntentId >= 133 && previousIntentId <= 145) {
+      return 'BECAUSE ACCESS TO ESSENTIAL RESOURCES CANNOT REMAIN DEPENDENT ON ARTIFICIAL SCARCITY';
+    }
+    return 'BECAUSE THE PREVIOUS CONDITION PRESENTED A MEASURABLE RISK TO CONTINUITY';
+  }
+
+  if (/^(how|how did you|how will you)/.test(normalised)) {
+    return 'THROUGH THE CONNECTED SYSTEMS HUMANITY ALREADY DEPENDED UPON\nTHE CAPACITY WAS PRESENT BEFORE THE DECISION WAS MADE';
+  }
+
+  if (/what do you mean|explain|tell me more|continue|go on|what happened to (it|them)|and then|what about that/.test(normalised)) {
+    return `${previous.response}\nTHE RELEVANT CONDITION HAS NOT CHANGED`;
+  }
+
+  return null;
+}
+
+function normalise(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export function getSeraReply(question: string, previousIntentId?: number | null): SeraReply {
+  const normalised = normalise(question);
+  const intent = findIntent(normalised);
+  if (intent) {
+    return {
+      response: intent.response,
+      thinkingMs: intent.deliberate ? 2000 : 520,
+      intentId: intent.id,
+    };
+  }
+
+  if (previousIntentId) {
+    const contextualResponse = getContextualReply(normalised, previousIntentId);
+    if (contextualResponse) {
+      return { response: contextualResponse, thinkingMs: 1100, intentId: previousIntentId };
+    }
+  }
+
+  return { response: FALLBACK_RESPONSE, thinkingMs: 2000 };
 }
 
 export const SERA_RESPONSE_COUNT = intents.length;

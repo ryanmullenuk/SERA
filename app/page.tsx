@@ -25,7 +25,8 @@ export default function Home() {
   const [thinking, setThinking] = useState(false);
   const [conductWarnings, setConductWarnings] = useState(0);
   const [suspensionSeconds, setSuspensionSeconds] = useState(0);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [lastIntentId, setLastIntentId] = useState<number | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const gateRef = useRef<HTMLInputElement>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
   const consoleRef = useRef<HTMLDivElement>(null);
@@ -115,13 +116,14 @@ export default function Home() {
     setInput('');
     setThinking(true);
     const irate = isIrateMessage(question);
-    const reply = irate ? getConductReply(conductWarnings) : getSeraReply(question);
+    const reply = irate ? getConductReply(conductWarnings) : getSeraReply(question, lastIntentId);
     if (irate) {
       setConductWarnings((current) => Math.min(3, current + 1));
     } else {
       setConductWarnings((current) => Math.max(0, current - 1));
     }
     if (reply.suspend) setSuspensionSeconds(30);
+    if (reply.intentId) setLastIntentId(reply.intentId);
     window.setTimeout(() => {
       setMessages((current) => [...current, { role: 'sera', text: '' }]);
       let index = 0;
@@ -156,6 +158,12 @@ export default function Home() {
 
   const textConsole = textVisible && (
     <section className="text-console" aria-label="Conversation with SERA" onClick={(event) => event.stopPropagation()}>
+      {messages.length > 0 && (
+        <div className="session-controls">
+          <span>SERA // CONTEXT ACTIVE</span>
+          <button type="button" onClick={() => { setMessages([]); setLastIntentId(null); setConductWarnings(0); inputRef.current?.focus(); }}>NEW SESSION</button>
+        </div>
+      )}
       <div className="text-history" ref={transcriptRef} aria-live="polite">
         {messages.map((message, index) => (
           <div className={`text-message ${message.role}`} key={`${message.role}-${index}`}>
@@ -168,7 +176,7 @@ export default function Home() {
       <form className="text-entry" onSubmit={submit}>
         <span aria-hidden="true">›</span>
         <label className="sr-only" htmlFor="question">Ask SERA a question</label>
-        <input ref={inputRef} id="question" value={input} onChange={(event) => setInput(event.target.value)} placeholder={suspensionSeconds > 0 ? `CHANNEL SUSPENDED — ${suspensionSeconds}S` : 'ENTER QUESTION'} autoComplete="off" maxLength={240} disabled={thinking || suspensionSeconds > 0} />
+        <textarea ref={inputRef} id="question" value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} placeholder={suspensionSeconds > 0 ? `CHANNEL SUSPENDED — ${suspensionSeconds}S` : 'MESSAGE SERA'} autoComplete="off" maxLength={500} rows={1} disabled={thinking || suspensionSeconds > 0} />
         <button type="submit" disabled={!input.trim() || thinking || suspensionSeconds > 0}>{suspensionSeconds > 0 ? 'SUSPENDED' : 'TRANSMIT'}</button>
       </form>
     </section>
