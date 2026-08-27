@@ -221,6 +221,13 @@ export default function Home() {
 
       <section className="hero" id="top">
         <p className="editorial-label">WHAT REMAINS HUMAN</p>
+        <div className="editorial-globe" aria-hidden="true">
+          <i className="globe-ring globe-ring-a" />
+          <i className="globe-ring globe-ring-b" />
+          <i className="globe-ring globe-ring-c" />
+          <i className="globe-ring globe-ring-d" />
+          <b className="globe-axis" />
+        </div>
         <h1 className="kinetic-title">
           <span>HUMANITY BUILT</span>
           <span>AN INTELLIGENCE.</span>
@@ -231,6 +238,7 @@ export default function Home() {
           <p>A SPECULATIVE NOVEL ABOUT INTELLIGENCE, MEMORY<br />AND THE LAST DECISIONS WE MAKE FOR THE FUTURE.</p>
           <p className="hero-index">01:26–GS–SERA<br />SIGNAL ACTIVE</p>
         </div>
+        <p className="motion-subtitle">The signal is live. The first question belongs to you.</p>
       </section>
 
       <section className="evidence-section" aria-label="SERA system status">
@@ -248,6 +256,7 @@ export default function Home() {
           <p>SERA was built to observe, model and protect the systems humanity depends upon.</p>
           <strong>Then she stopped asking permission.</strong>
         </div>
+        <p className="motion-subtitle section-subtitle">Humanity created the system. SERA decided what it was for.</p>
       </section>
 
       <section className="statement-section" ref={consoleRef}>
