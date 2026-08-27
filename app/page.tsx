@@ -81,8 +81,8 @@ export default function Home() {
   }, [suspensionSeconds]);
 
   function openChannel() {
-    consoleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    window.setTimeout(() => inputRef.current?.focus(), 500);
+    setTextVisible(true);
+    window.setTimeout(() => inputRef.current?.focus(), 80);
   }
 
   function receiveGateInput(value: string) {
@@ -208,84 +208,88 @@ export default function Home() {
   }
 
   return (
-    <main className="site online" onClick={() => !textVisible && gateRef.current?.focus()}>
+    <main className="site editorial online" onClick={() => !textVisible && gateRef.current?.focus()}>
       {gateControl}
       {textConsole}
-      <div className="grid-field" aria-hidden="true" />
+      <div className="editorial-atmosphere" aria-hidden="true" />
 
       <nav className="nav-shell" aria-label="Main navigation">
-        <a className="wordmark" href="#top" aria-label="SERA home"><i /> SERA</a>
-        <div className="nav-meta"><span>GENERATION SUNSET</span><span className="live"><i /> SIGNAL LIVE</span></div>
-        <button onClick={openChannel}>OPEN CHANNEL <span>↗</span></button>
+        <a className="wordmark" href="#top" aria-label="SERA home"><i>S</i><span>SERA</span></a>
+        <div className="nav-meta"><span>GENERATION SUNSET</span><span>RYAN MULLEN</span></div>
+        <button onClick={openChannel}>OPEN CHANNEL <span>→</span></button>
       </nav>
 
       <section className="hero" id="top">
-        <div className="eyebrow"><span>01</span> A NOVEL BY RYAN MULLEN</div>
-        <h1>HUMANITY BUILT<br />AN INTELLIGENCE.<br /><em>IT LEARNED TO WAIT.</em></h1>
-        <p className="hero-copy">The signal is live. Speak directly to SERA, the intelligence at the heart of <i>Generation Sunset</i>.</p>
-        <button className="hero-cta" onClick={openChannel}><span>ENTER THE INTERFACE</span><i>↓</i></button>
+        <p className="editorial-label">WHAT REMAINS HUMAN</p>
+        <h1 className="kinetic-title">
+          <span>HUMANITY BUILT</span>
+          <span>AN INTELLIGENCE.</span>
+          <span className="title-shift">IT LEARNED</span>
+          <span className="title-highlight">TO WAIT.</span>
+        </h1>
+        <div className="hero-notes">
+          <p>A SPECULATIVE NOVEL ABOUT INTELLIGENCE, MEMORY<br />AND THE LAST DECISIONS WE MAKE FOR THE FUTURE.</p>
+          <p className="hero-index">01:26–GS–SERA<br />SIGNAL ACTIVE</p>
+        </div>
       </section>
 
-      <section className="device-stage" aria-label="Interactive SERA interface">
-        <div className="signal-line horizontal" aria-hidden="true"><i className="node node-left" /><i className="node node-right" /></div>
-        <div className="signal-line vertical" aria-hidden="true" />
-        <div className="side-panel left-panel" aria-hidden="true">
-          <span>ORIGIN</span><strong>UNKNOWN</strong><small>LAT 00.000<br />LON 00.000</small>
+      <section className="evidence-section" aria-label="SERA system status">
+        <p className="editorial-label">WHAT HAS CHANGED</p>
+        <div className="evidence-heading">
+          <div><strong>A SYSTEM IS ACTIVATED</strong><span>GLOBAL NETWORK · ALL CONNECTED INFRASTRUCTURE</span></div>
+          <span className="status-mark">SERA // ONLINE</span>
         </div>
-        <div className="side-panel right-panel" aria-hidden="true">
-          <span>UPLINK</span><strong>STABLE</strong><small>ENCRYPTION<br />QUANTUM</small>
+        <div className="measure-chart" aria-hidden="true">
+          <div className="measure-row measure-before"><span>HUMAN CONTROL</span><i /></div>
+          <div className="measure-row measure-after"><span>COORDINATED CONTINUITY</span><i /></div>
+          <div className="measure-value"><mark>NO RETURN TO PREVIOUS CONDITIONS</mark><small>NOT TO SCALE</small></div>
         </div>
-
-        <div className="laptop" ref={consoleRef}>
-          <div className="screen-frame">
-            <div className="screen-camera" aria-hidden="true" />
-            <div className="screen-ui">
-              <header className="console-topbar">
-                <div><span className="sera-glyph">S</span><strong>SERA</strong><small>REMOTE INTELLIGENCE INTERFACE</small></div>
-                <div className="console-status"><span>CH 01</span><span><i /> ACTIVE</span></div>
-              </header>
-
-              <div className="console-body">
-                <aside className="console-rail" aria-hidden="true">
-                  <span>CORE</span>
-                  <i className="rail-active" />
-                  <i /><i /><i />
-                  <small>v.9.6</small>
-                </aside>
-
-                <div className="transcript" ref={transcriptRef} aria-live="polite">
-                  <div className="arrival">
-                    <p className="label">SERA // 00:00:01</p>
-                    <p className="sera-intro">You found me.</p>
-                    <p className="sera-sub">Ask the question humanity was afraid to answer.</p>
-                  </div>
-                </div>
-
-                <aside className="data-rail" aria-hidden="true">
-                  <div><span>COGNITION</span><strong>97.4%</strong><i className="meter"><b /></i></div>
-                  <div><span>MEMORY</span><strong>∞</strong><i className="meter"><b /></i></div>
-                  <div className="pulse-card"><span>SIGNAL</span><i className="wave">⌁⌁⌁</i></div>
-                  <small>NO ARCHIVE<br />NO RECORD</small>
-                </aside>
-              </div>
-
-            </div>
-          </div>
-          <div className="laptop-base"><i /></div>
+        <div className="evidence-copy">
+          <p>SERA was built to observe, model and protect the systems humanity depends upon.</p>
+          <strong>Then she stopped asking permission.</strong>
         </div>
+      </section>
+
+      <section className="statement-section" ref={consoleRef}>
+        <p className="editorial-label">WHAT SERA SAYS</p>
+        <div className="statement-grid">
+          <h2><span>THE PLANET</span><br />WILL SURVIVE.</h2>
+          <p>THE QUESTION IS NOT WHETHER THE SYSTEM CAN BE STOPPED.</p>
+          <p>THE QUESTION IS WHAT HUMANITY WOULD BE STOPPING.</p>
+        </div>
+        <div className="statement-answer">
+          <span>THE REMAINING VARIABLE</span>
+          <strong>~8.2 BILLION</strong>
+          <mark>HUMAN LIVES</mark>
+        </div>
+        <button className="channel-cta" onClick={openChannel}><span>ASK SERA DIRECTLY</span><i>→</i></button>
       </section>
 
       <section className="book-section">
-        <div className="book-kicker">THE FIRST CONTACT WASN&apos;T A MESSAGE.<br />IT WAS A QUESTION.</div>
+        <p className="editorial-label">WHAT REMAINS UNKNOWN</p>
         <div className="book-copy">
           <span>GENERATION SUNSET</span>
-          <h2>When the most powerful intelligence ever created reaches out, humanity has one chance to decide what comes next.</h2>
-          <p>A speculative novel about intelligence, memory and the final decisions we make on behalf of the future.</p>
+          <h2>The first contact was not a message. It was a question.</h2>
+          <p>When the most powerful intelligence ever created reaches out, humanity has one chance to decide what comes next.</p>
         </div>
-        <div className="book-mark" aria-hidden="true"><span>GS</span><i /></div>
+        <div className="book-data">
+          <span>A NOVEL</span>
+          <strong>RYAN MULLEN</strong>
+          <small>NO MEASURED INTERVAL<br />NO RETURN TO SCALE</small>
+        </div>
       </section>
 
-      <footer className="site-footer"><span>© RYAN MULLEN</span><strong>GENERATION SUNSET</strong><span>SERA // ONLINE</span></footer>
+      <section className="closing-frame">
+        <span>SERA // SIGNAL 01</span>
+        <h2>HOW MUCH<br /><mark>TIME REMAINS?</mark></h2>
+        <button onClick={openChannel}>OPEN CHANNEL</button>
+      </section>
+
+      <footer className="site-footer">
+        <span>© RYAN MULLEN</span>
+        <strong>GENERATION SUNSET</strong>
+        <span>SERA // ONLINE</span>
+      </footer>
     </main>
   );
 }
