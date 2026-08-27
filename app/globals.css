@@ -24,7 +24,7 @@ button:focus-visible, a:focus-visible, textarea:focus-visible { outline: 1px sol
 .gateway { position: fixed; inset: 0; min-height: 100svh; overflow: hidden; background: #000; color: #fff; cursor: text; }
 .gateway::after, .site::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-events: none; opacity: .13; background: repeating-linear-gradient(to bottom, transparent 0, transparent 3px, rgba(255,255,255,.025) 4px); mix-blend-mode: screen; }
 .gateway-brand { position: absolute; z-index: 45; top: 30px; left: 34px; display: flex; align-items: center; gap: 13px; animation: editorial-in .7s both; }
-.gateway-brand span { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid rgba(53,242,151,.58); color: var(--green); font: 600 13px/1 var(--mono); }
+.gateway-brand span { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid rgba(242,240,237,.58); color: var(--green); font: 600 13px/1 var(--mono); }
 .gateway-brand strong { color: var(--green); font: 500 11px/1 var(--mono); letter-spacing: .24em; }
 .intro-orb { position: absolute; top: 50%; left: 50%; width: 170px; height: 170px; transform: translate(-50%,-50%); border: 1px solid rgba(255,255,255,.35); border-radius: 50%; animation: globe-arrive 2.8s cubic-bezier(.58,.04,.3,1) both; }
 .intro-orb::before, .intro-orb::after { content: ""; position: absolute; inset: 20px -1px; border: 1px solid rgba(255,255,255,.18); border-radius: 50%; }
